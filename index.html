@@ -1,719 +1,622 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRS Rule 72(t) SEPP Calculator</title>
-    <meta name="description" content="Calculate Substantially Equal Periodic Payments (SEPP) for penalty-free early IRA withdrawals using IRS-approved methods: RMD, Amortization, and Annuitization.">
-    <style>
-        :root {
-            --primary: #1e40af;
-            --primary-light: #3b82f6;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --success: #059669;
-            --warning: #d97706;
-        }
-
-```
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRS Rule 72(t) SEPP Calculator</title>
+  <meta
+    name="description"
+    content="Calculate Substantially Equal Periodic Payments (SEPP) for penalty-free early IRA withdrawals using IRS-approved methods: RMD, Amortization, and Annuitization."
+  />
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-light: #3b82f6;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #059669;
+      --warning: #d97706;
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.6;
-        min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
     }
 
-    .container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 2rem 1rem;
-    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
 
-    header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
+    header { text-align: center; margin-bottom: 2rem; }
 
     h1 {
-        font-size: 1.875rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
     }
 
-    .subtitle {
-        color: var(--text-muted);
-        font-size: 1rem;
-    }
+    .subtitle { color: var(--text-muted); font-size: 1rem; }
 
     .card {
-        background: var(--card-bg);
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
     }
 
     .card-title {
-        font-size: 1.125rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: var(--primary);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
     }
 
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
+    .form-group { display: flex; flex-direction: column; }
 
     label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-bottom: 0.375rem;
-        color: var(--text);
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.375rem;
+      color: var(--text);
     }
 
     input, select {
-        padding: 0.625rem 0.875rem;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
+      padding: 0.625rem 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     input:focus, select:focus {
-        outline: none;
-        border-color: var(--primary-light);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
-    .help-text {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        margin-top: 0.25rem;
-    }
+    .help-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
 
     .btn {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color 0.2s, transform 0.1s;
-        width: 100%;
-        margin-top: 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      width: 100%;
+      margin-top: 1rem;
     }
 
-    .btn:hover {
-        background: var(--primary-light);
-    }
-
-    .btn:active {
-        transform: scale(0.98);
-    }
+    .btn:hover { background: var(--primary-light); }
+    .btn:active { transform: scale(0.98); }
 
     .results-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
     }
 
     @media (max-width: 640px) {
-        .results-grid {
-            grid-template-columns: 1fr;
-        }
+      .results-grid { grid-template-columns: 1fr; }
     }
 
     .result-card {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-        border-radius: 10px;
-        padding: 1.25rem;
-        color: white;
-        text-align: center;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      border-radius: 10px;
+      padding: 1.25rem;
+      color: white;
+      text-align: center;
     }
 
-    .result-card.rmd {
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    }
-
-    .result-card.amortization {
-        background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
-    }
-
-    .result-card.annuitization {
-        background: linear-gradient(135deg, #dc2626 0%, #f87171 100%);
-    }
+    .result-card.rmd { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+    .result-card.amortization { background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); }
+    .result-card.annuitization { background: linear-gradient(135deg, #dc2626 0%, #f87171 100%); }
 
     .result-method {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        opacity: 0.9;
-        margin-bottom: 0.25rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.9;
+      margin-bottom: 0.25rem;
     }
 
-    .result-amount {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-    }
+    .result-amount { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .result-monthly { font-size: 0.875rem; opacity: 0.9; }
 
-    .result-monthly {
-        font-size: 0.875rem;
-        opacity: 0.9;
-    }
-
-    .info-section {
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--border);
-    }
+    .info-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
 
     .info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-        margin-top: 0.75rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-top: 0.75rem;
     }
 
-    @media (max-width: 640px) {
-        .info-grid {
-            grid-template-columns: 1fr;
-        }
-    }
+    @media (max-width: 640px) { .info-grid { grid-template-columns: 1fr; } }
 
     .info-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem 0;
-        border-bottom: 1px dashed var(--border);
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px dashed var(--border);
     }
 
-    .info-label {
-        color: var(--text-muted);
-        font-size: 0.875rem;
-    }
-
-    .info-value {
-        font-weight: 600;
-        font-size: 0.875rem;
-    }
+    .info-label { color: var(--text-muted); font-size: 0.875rem; }
+    .info-value { font-weight: 600; font-size: 0.875rem; }
 
     .warning-box {
-        background: #fef3c7;
-        border: 1px solid #f59e0b;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-top: 1rem;
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
     }
 
-    .warning-box h4 {
-        color: #92400e;
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .warning-box p {
-        color: #92400e;
-        font-size: 0.8125rem;
-    }
+    .warning-box h4 { color: #92400e; font-size: 0.875rem; margin-bottom: 0.5rem; }
+    .warning-box p { color: #92400e; font-size: 0.8125rem; }
 
     .disclaimer {
-        background: #f1f5f9;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-top: 1rem;
-        font-size: 0.75rem;
-        color: var(--text-muted);
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
     .rate-info {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        margin-bottom: 1rem;
-        font-size: 0.8125rem;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.8125rem;
     }
 
-    .rate-info strong {
-        color: var(--primary);
-    }
+    .rate-info strong { color: var(--primary); }
 
-    .hidden {
-        display: none;
-    }
+    .hidden { display: none; }
 
-    .method-descriptions {
-        display: grid;
-        gap: 0.75rem;
-        margin-top: 1rem;
-    }
+    .method-descriptions { display: grid; gap: 0.75rem; margin-top: 1rem; }
 
     .method-desc {
-        padding: 0.75rem;
-        background: #f8fafc;
-        border-radius: 6px;
-        font-size: 0.8125rem;
+      padding: 0.75rem;
+      background: #f8fafc;
+      border-radius: 6px;
+      font-size: 0.8125rem;
     }
 
-    .method-desc h5 {
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-    }
+    .method-desc h5 { font-weight: 600; margin-bottom: 0.25rem; }
 
     .sepp-duration {
-        background: #ecfdf5;
-        border: 1px solid #a7f3d0;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-top: 1rem;
-        text-align: center;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      text-align: center;
     }
 
-    .sepp-duration h4 {
-        color: #065f46;
-        font-size: 0.875rem;
-        margin-bottom: 0.25rem;
-    }
+    .sepp-duration h4 { color: #065f46; font-size: 0.875rem; margin-bottom: 0.25rem; }
+    .sepp-duration .duration { font-size: 1.25rem; font-weight: 700; color: #059669; }
 
-    .sepp-duration .duration {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #059669;
-    }
-    
-    a {
-        color: var(--primary-light);
-        text-decoration: none;
-    }
-    
-    a:hover {
-        text-decoration: underline;
-    }
-</style>
-```
+    a { color: var(--primary-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
+    .inline-note {
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <h1>IRS Rule 72(t) SEPP Calculator</h1>
-            <p class="subtitle">Calculate Substantially Equal Periodic Payments for penalty-free early IRA withdrawals</p>
-        </header>
+  <div class="container">
+    <header>
+      <h1>IRS Rule 72(t) SEPP Calculator</h1>
+      <p class="subtitle">Calculate Substantially Equal Periodic Payments for penalty-free early IRA withdrawals</p>
+    </header>
 
-```
     <div class="card">
-        <h2 class="card-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Enter Your Information
-        </h2>
+      <h2 class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+        Enter Your Information
+      </h2>
 
-        <div class="rate-info">
-            <strong>Interest Rate Note:</strong> Per <a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf" target="_blank" rel="noopener">IRS Notice 2022-6</a>, you may use any rate up to the <strong>greater of 5% or 120% of the federal mid-term rate</strong>. As of December 2025, 120% of the mid-term AFR is approximately 4.55%, so the maximum usable rate is <strong>5.00%</strong>.
+      <div class="rate-info">
+        <strong>Interest Rate Note:</strong>
+        Per <a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf" target="_blank" rel="noopener">IRS Notice 2022-6</a>,
+        you may use any rate up to the <strong>greater of 5% or 120% of the federal mid-term rate</strong>.
+        Always verify the applicable AFR on
+        <a href="https://apps.irs.gov/app/picklist/list/federalRates.html" target="_blank" rel="noopener">IRS.gov</a>.
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="birthdate">Date of Birth</label>
+          <input type="date" id="birthdate" required />
         </div>
 
-        <div class="form-grid">
-            <div class="form-group">
-                <label for="birthdate">Date of Birth</label>
-                <input type="date" id="birthdate" required>
-            </div>
-
-            <div class="form-group">
-                <label for="startDate">SEPP Start Date</label>
-                <input type="date" id="startDate" required>
-                <span class="help-text">When distributions will begin</span>
-            </div>
-
-            <div class="form-group">
-                <label for="balance">IRA Account Balance ($)</label>
-                <input type="number" id="balance" min="1" step="0.01" placeholder="500000" required>
-            </div>
-
-            <div class="form-group">
-                <label for="interestRate">Interest Rate (%)</label>
-                <input type="number" id="interestRate" min="0" max="10" step="0.01" value="5.00">
-                <span class="help-text">Max: greater of 5% or 120% AFR</span>
-            </div>
-
-            <div class="form-group">
-                <label for="lifeExpTable">Life Expectancy Table</label>
-                <select id="lifeExpTable">
-                    <option value="single" selected>Single Life Table</option>
-                    <option value="uniform">Uniform Lifetime Table</option>
-                </select>
-                <span class="help-text">Single Life typically yields higher payments</span>
-            </div>
+        <div class="form-group">
+          <label for="startDate">SEPP Start Date</label>
+          <input type="date" id="startDate" required />
+          <span class="help-text">When distributions will begin</span>
         </div>
 
-        <button class="btn" onclick="calculate()">Calculate SEPP Amounts</button>
+        <div class="form-group">
+          <label for="balance">IRA Account Balance ($)</label>
+          <input type="number" id="balance" min="1" step="0.01" placeholder="500000" required />
+        </div>
+
+        <div class="form-group">
+          <label for="interestRate">Interest Rate (%)</label>
+          <input type="number" id="interestRate" min="0" max="10" step="0.01" value="5.00" />
+          <span class="help-text">Max is IRS-limited (Notice 2022-6)</span>
+        </div>
+
+        <div class="form-group">
+          <label for="lifeExpTable">Life Expectancy Table</label>
+          <select id="lifeExpTable">
+            <option value="single" selected>Single Life Table</option>
+            <option value="uniform">Uniform Lifetime Table (72+)</option>
+          </select>
+          <span class="help-text">Single Life typically yields higher payments</span>
+        </div>
+      </div>
+
+      <button class="btn" onclick="calculate()">Calculate SEPP Amounts</button>
+      <div id="tableNote" class="inline-note hidden"></div>
     </div>
 
     <div id="results" class="card hidden">
-        <h2 class="card-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-            Your 72(t) Distribution Options
-        </h2>
+      <h2 class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+          <polyline points="16 7 22 7 22 13" />
+        </svg>
+        Your 72(t) Distribution Options
+      </h2>
 
-        <div class="results-grid">
-            <div class="result-card rmd">
-                <div class="result-method">RMD Method</div>
-                <div class="result-amount" id="rmdAmount">$0</div>
-                <div class="result-monthly" id="rmdMonthly">$0/month</div>
-            </div>
-
-            <div class="result-card amortization">
-                <div class="result-method">Amortization Method</div>
-                <div class="result-amount" id="amortAmount">$0</div>
-                <div class="result-monthly" id="amortMonthly">$0/month</div>
-            </div>
-
-            <div class="result-card annuitization">
-                <div class="result-method">Annuitization Method</div>
-                <div class="result-amount" id="annuitAmount">$0</div>
-                <div class="result-monthly" id="annuitMonthly">$0/month</div>
-            </div>
+      <div class="results-grid">
+        <div class="result-card rmd">
+          <div class="result-method">RMD Method</div>
+          <div class="result-amount" id="rmdAmount">$0</div>
+          <div class="result-monthly" id="rmdMonthly">$0/month</div>
         </div>
 
-        <div class="sepp-duration">
-            <h4>Required SEPP Duration</h4>
-            <div class="duration" id="seppDuration">-</div>
-            <div class="help-text" id="seppEndDate">-</div>
+        <div class="result-card amortization">
+          <div class="result-method">Amortization Method</div>
+          <div class="result-amount" id="amortAmount">$0</div>
+          <div class="result-monthly" id="amortMonthly">$0/month</div>
         </div>
 
-        <div class="info-section">
-            <h3 style="font-size: 0.9375rem; margin-bottom: 0.5rem;">Calculation Details</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Your Age at Start</span>
-                    <span class="info-value" id="calcAge">-</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Life Expectancy Factor</span>
-                    <span class="info-value" id="calcLifeExp">-</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Interest Rate Used</span>
-                    <span class="info-value" id="calcRate">-</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Account Balance</span>
-                    <span class="info-value" id="calcBalance">-</span>
-                </div>
-            </div>
+        <div class="result-card annuitization">
+          <div class="result-method">Annuitization Method</div>
+          <div class="result-amount" id="annuitAmount">$0</div>
+          <div class="result-monthly" id="annuitMonthly">$0/month</div>
         </div>
+      </div>
 
-        <div class="method-descriptions">
-            <div class="method-desc">
-                <h5>RMD Method (Recalculated Annually)</h5>
-                <p>Balance ÷ Life Expectancy. Recalculated each year based on account value. Generally produces the <strong>lowest</strong> payment. Amount varies annually.</p>
-            </div>
-            <div class="method-desc">
-                <h5>Fixed Amortization Method</h5>
-                <p>Balance ÷ Present Value Annuity Factor. Uses life expectancy and interest rate. <strong>Fixed payment</strong> each year. Generally produces the <strong>highest</strong> payment.</p>
-            </div>
-            <div class="method-desc">
-                <h5>Fixed Annuitization Method</h5>
-                <p>Balance ÷ Annuity Factor (from mortality tables). <strong>Fixed payment</strong> each year. Similar to amortization, sometimes slightly lower.</p>
-            </div>
-        </div>
+      <div class="sepp-duration">
+        <h4>Required SEPP Duration</h4>
+        <div class="duration" id="seppDuration">-</div>
+        <div class="help-text" id="seppEndDate">-</div>
+      </div>
 
-        <div class="warning-box">
-            <h4>⚠️ Important 72(t) Rules</h4>
-            <p>Once started, SEPP payments must continue for <strong>5 years OR until age 59½</strong>, whichever is <strong>longer</strong>. Modifying payments before this period ends triggers a 10% penalty plus interest on ALL prior distributions. You may make a <strong>one-time switch</strong> from Amortization or Annuitization to the RMD method without penalty.</p>
+      <div class="info-section">
+        <h3 style="font-size: 0.9375rem; margin-bottom: 0.5rem;">Calculation Details</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Your Age at Start</span>
+            <span class="info-value" id="calcAge">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Life Expectancy / Divisor</span>
+            <span class="info-value" id="calcLifeExp">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Interest Rate Used</span>
+            <span class="info-value" id="calcRate">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Account Balance</span>
+            <span class="info-value" id="calcBalance">-</span>
+          </div>
         </div>
+      </div>
 
-        <div class="disclaimer">
-            <strong>Disclaimer:</strong> This calculator provides estimates based on IRS Notice 2022-6 guidelines and current IRS life expectancy tables (effective January 1, 2022). Results are for informational purposes only and should not be considered tax or financial advice. Consult with a qualified tax professional or financial advisor before implementing any 72(t) distribution strategy. Always verify current IRS rules and applicable federal mid-term rates at <a href="https://apps.irs.gov/app/picklist/list/federalRates.html" target="_blank" rel="noopener">IRS.gov</a>.
+      <div class="method-descriptions">
+        <div class="method-desc">
+          <h5>RMD Method (Recalculated Annually)</h5>
+          <p>Balance ÷ divisor. Recalculated each year based on account value. Generally produces the <strong>lowest</strong> payment. Amount varies annually.</p>
         </div>
+        <div class="method-desc">
+          <h5>Fixed Amortization Method</h5>
+          <p>Uses life expectancy and interest rate to compute a level annual payment. <strong>Fixed payment</strong> each year.</p>
+        </div>
+        <div class="method-desc">
+          <h5>Fixed Annuitization Method</h5>
+          <p>Uses an annuity factor derived from IRS mortality rates (Table 4) and the chosen interest rate. <strong>Fixed payment</strong> each year.</p>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <h4>⚠️ Important 72(t) Rules</h4>
+        <p>Once started, SEPP payments must continue for <strong>5 years OR until age 59½</strong>, whichever is <strong>longer</strong>. Modifying payments before this period ends triggers a 10% penalty plus interest on ALL prior distributions. You may make a <strong>one-time switch</strong> from Amortization or Annuitization to the RMD method without penalty.</p>
+      </div>
+
+      <div class="disclaimer">
+        <strong>Disclaimer:</strong> Informational only. Consult a qualified tax professional before implementing any 72(t) plan. Verify current IRS rules and AFR limits on IRS.gov.
+      </div>
     </div>
 
     <div class="card">
-        <h2 class="card-title">About IRS Rule 72(t)</h2>
-        <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.7;">
-            Section 72(t) of the Internal Revenue Code allows penalty-free early withdrawals from IRAs and qualified retirement plans before age 59½ through Substantially Equal Periodic Payments (SEPP). The IRS provides three approved calculation methods: Required Minimum Distribution (RMD), Fixed Amortization, and Fixed Annuitization. Per IRS Notice 2022-6, the interest rate for amortization and annuitization methods cannot exceed the greater of 5% or 120% of the federal mid-term rate.
-        </p>
-
-        <h3 style="font-size: 0.9375rem; margin-top: 1.25rem; margin-bottom: 0.75rem; color: var(--primary);">IRS Sources &amp; Tables Used</h3>
-        <ul style="font-size: 0.8125rem; color: var(--text-muted); line-height: 1.8; padding-left: 1.25rem;">
-            <li>
-                <a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf" target="_blank" rel="noopener">
-                    IRS Notice 2022-6
-                </a> — Official SEPP calculation guidance (effective 2022+)
-            </li>
-            <li>
-                <a href="https://www.irs.gov/retirement-plans/substantially-equal-periodic-payments" target="_blank" rel="noopener">
-                    IRS: Substantially Equal Periodic Payments
-                </a> — Overview and Q&A on 72(t) rules
-            </li>
-            <li>
-                <a href="https://www.irs.gov/publications/p590b" target="_blank" rel="noopener">
-                    IRS Publication 590-B
-                </a> — Distributions from IRAs (includes life expectancy tables in Appendix B)
-            </li>
-            <li>
-                <a href="https://www.ecfr.gov/current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3eb7e17454be566/section-1.401(a)(9)-9" target="_blank" rel="noopener">
-                    26 CFR § 1.401(a)(9)-9
-                </a> — Life expectancy and distribution period tables (Single Life Table, Uniform Lifetime Table)
-            </li>
-            <li>
-                <a href="https://apps.irs.gov/app/picklist/list/federalRates.html" target="_blank" rel="noopener">
-                    IRS Applicable Federal Rates (AFR)
-                </a> — Monthly federal mid-term rates for interest rate determination
-            </li>
-        </ul>
+      <h2 class="card-title">About IRS Rule 72(t)</h2>
+      <p style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.7;">
+        Section 72(t) allows penalty-free early withdrawals from IRAs and qualified plans before age 59½ through SEPP.
+        The IRS provides three approved calculation methods: RMD, Fixed Amortization, and Fixed Annuitization.
+      </p>
     </div>
-</div>
+  </div>
 
-<script>
-    // IRS Single Life Expectancy Table (effective January 1, 2022)
-    // Source: 26 CFR 1.401(a)(9)-9(b)
+  <script>
+    // Table 1 (Single Life Table) from 26 CFR §1.401(a)(9)-9(b)
     const singleLifeTable = {
-        0: 84.6, 1: 83.7, 2: 82.8, 3: 81.8, 4: 80.8, 5: 79.8, 6: 78.8, 7: 77.9, 8: 76.9, 9: 75.9,
-        10: 74.9, 11: 73.9, 12: 72.9, 13: 71.9, 14: 70.9, 15: 69.9, 16: 69.0, 17: 68.0, 18: 67.0, 19: 66.0,
-        20: 65.0, 21: 64.1, 22: 63.1, 23: 62.1, 24: 61.1, 25: 60.2, 26: 59.2, 27: 58.2, 28: 57.3, 29: 56.3,
-        30: 55.3, 31: 54.4, 32: 53.4, 33: 52.5, 34: 51.5, 35: 50.5, 36: 49.6, 37: 48.6, 38: 47.7, 39: 46.7,
-        40: 45.7, 41: 44.8, 42: 43.8, 43: 42.9, 44: 41.9, 45: 41.0, 46: 40.0, 47: 39.0, 48: 38.1, 49: 37.1,
-        50: 36.2, 51: 35.3, 52: 34.3, 53: 33.4, 54: 32.5, 55: 31.6, 56: 30.6, 57: 29.8, 58: 28.9, 59: 28.0,
-        60: 27.1, 61: 26.2, 62: 25.4, 63: 24.5, 64: 23.7, 65: 22.9, 66: 22.0, 67: 21.2, 68: 20.4, 69: 19.6,
-        70: 18.8, 71: 18.0, 72: 17.2, 73: 16.4, 74: 15.6, 75: 14.8, 76: 14.1, 77: 13.3, 78: 12.6, 79: 11.9,
-        80: 11.2, 81: 10.5, 82: 9.9, 83: 9.3, 84: 8.7, 85: 8.1, 86: 7.6, 87: 7.1, 88: 6.6, 89: 6.1,
-        90: 5.7, 91: 5.3, 92: 4.9, 93: 4.6, 94: 4.3, 95: 4.0, 96: 3.7, 97: 3.4, 98: 3.2, 99: 3.0,
-        100: 2.8, 101: 2.6, 102: 2.5, 103: 2.3, 104: 2.2, 105: 2.1, 106: 2.1, 107: 2.1, 108: 2.0, 109: 2.0,
-        110: 2.0, 111: 2.0, 112: 2.0, 113: 1.9, 114: 1.9, 115: 1.8, 116: 1.8, 117: 1.6, 118: 1.4, 119: 1.1,
-        120: 1.0
+      0: 84.6, 1: 83.7, 2: 82.8, 3: 81.8, 4: 80.8, 5: 79.8, 6: 78.8, 7: 77.9, 8: 76.9, 9: 75.9,
+      10: 74.9, 11: 73.9, 12: 72.9, 13: 71.9, 14: 70.9, 15: 69.9, 16: 69.0, 17: 68.0, 18: 67.0, 19: 66.0,
+      20: 65.0, 21: 64.1, 22: 63.1, 23: 62.1, 24: 61.1, 25: 60.2, 26: 59.2, 27: 58.2, 28: 57.3, 29: 56.3,
+      30: 55.3, 31: 54.4, 32: 53.4, 33: 52.5, 34: 51.5, 35: 50.5, 36: 49.6, 37: 48.6, 38: 47.7, 39: 46.7,
+      40: 45.7, 41: 44.8, 42: 43.8, 43: 42.9, 44: 41.9, 45: 41.0, 46: 40.0, 47: 39.0, 48: 38.1, 49: 37.1,
+      50: 36.2, 51: 35.3, 52: 34.3, 53: 33.4, 54: 32.5, 55: 31.6, 56: 30.6, 57: 29.8, 58: 28.9, 59: 28.0,
+      60: 27.1, 61: 26.2, 62: 25.4, 63: 24.5, 64: 23.7, 65: 22.9, 66: 22.0, 67: 21.2, 68: 20.4, 69: 19.6,
+      70: 18.8, 71: 18.0, 72: 17.2, 73: 16.4, 74: 15.6, 75: 14.8, 76: 14.1, 77: 13.3, 78: 12.6, 79: 11.9,
+      80: 11.2, 81: 10.5, 82: 9.9, 83: 9.3, 84: 8.7, 85: 8.1, 86: 7.6, 87: 7.1, 88: 6.6, 89: 6.1,
+      90: 5.7, 91: 5.3, 92: 4.9, 93: 4.6, 94: 4.3, 95: 4.0, 96: 3.7, 97: 3.4, 98: 3.2, 99: 3.0,
+      100: 2.8, 101: 2.6, 102: 2.5, 103: 2.3, 104: 2.2, 105: 2.1, 106: 2.1, 107: 2.1, 108: 2.0, 109: 2.0,
+      110: 2.0, 111: 2.0, 112: 2.0, 113: 1.9, 114: 1.9, 115: 1.8, 116: 1.8, 117: 1.6, 118: 1.4, 119: 1.1,
+      120: 1.0
     };
 
-    // IRS Uniform Lifetime Table (effective January 1, 2022)
-    // Source: 26 CFR 1.401(a)(9)-9(c) - extended for SEPP use per IRS guidance
+    // Table 2 (Uniform Lifetime Table) from 26 CFR §1.401(a)(9)-9(c) — starts at age 72
     const uniformLifetimeTable = {
-        20: 63.0, 21: 62.1, 22: 61.1, 23: 60.1, 24: 59.1, 25: 58.2, 26: 57.2, 27: 56.2, 28: 55.3, 29: 54.3,
-        30: 53.3, 31: 52.4, 32: 51.4, 33: 50.4, 34: 49.4, 35: 48.5, 36: 47.5, 37: 46.5, 38: 45.6, 39: 44.6,
-        40: 43.6, 41: 42.7, 42: 41.7, 43: 40.7, 44: 39.8, 45: 38.8, 46: 37.9, 47: 36.9, 48: 35.9, 49: 35.0,
-        50: 34.0, 51: 33.1, 52: 32.1, 53: 31.2, 54: 30.2, 55: 29.3, 56: 28.4, 57: 27.4, 58: 26.5, 59: 25.6,
-        60: 24.6, 61: 23.7, 62: 22.8, 63: 21.9, 64: 21.0, 65: 20.1, 66: 19.2, 67: 18.3, 68: 17.4, 69: 16.6,
-        70: 15.7, 71: 14.8, 72: 27.4, 73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1,
-        80: 20.2, 81: 19.4, 82: 18.5, 83: 17.7, 84: 16.8, 85: 16.0, 86: 15.2, 87: 14.4, 88: 13.7, 89: 12.9,
-        90: 12.2, 91: 11.5, 92: 10.8, 93: 10.1, 94: 9.5, 95: 8.9, 96: 8.4, 97: 7.8, 98: 7.3, 99: 6.8,
-        100: 6.4, 101: 6.0, 102: 5.6, 103: 5.2, 104: 4.9, 105: 4.6, 106: 4.3, 107: 4.1, 108: 3.9, 109: 3.7,
-        110: 3.5, 111: 3.4, 112: 3.3, 113: 3.1, 114: 3.0, 115: 2.9, 116: 2.8, 117: 2.7, 118: 2.5, 119: 2.3,
-        120: 2.0
+      72: 27.4, 73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1,
+      80: 20.2, 81: 19.4, 82: 18.5, 83: 17.7, 84: 16.8, 85: 16.0, 86: 15.2, 87: 14.4,
+      88: 13.7, 89: 12.9, 90: 12.2, 91: 11.5, 92: 10.8, 93: 10.1, 94: 9.5, 95: 8.9,
+      96: 8.4, 97: 7.8, 98: 7.3, 99: 6.8, 100: 6.4, 101: 6.0, 102: 5.6, 103: 5.2,
+      104: 4.9, 105: 4.6, 106: 4.3, 107: 4.1, 108: 3.9, 109: 3.7, 110: 3.5, 111: 3.4,
+      112: 3.3, 113: 3.1, 114: 3.0, 115: 2.9, 116: 2.8, 117: 2.7, 118: 2.5, 119: 2.3,
+      120: 2.0
     };
 
-    // Set default dates on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const today = new Date();
-        document.getElementById('startDate').value = today.toISOString().split('T')[0];
+    // Table 4 (Mortality Rates) from 26 CFR §1.401(a)(9)-9(e)
+    // qx = probability of death between exact age x and x+1
+    const mortalityQx = {
+      0: 0.001762, 1: 0.000441, 2: 0.000292, 3: 0.000232, 4: 0.000177, 5: 0.000161, 6: 0.000153, 7: 0.000145, 8: 0.000132, 9: 0.000127,
+      10: 0.000128, 11: 0.000135, 12: 0.000146, 13: 0.000164, 14: 0.000192, 15: 0.000223, 16: 0.000253, 17: 0.000276, 18: 0.000293, 19: 0.000304,
+      20: 0.000313, 21: 0.000343, 22: 0.000377, 23: 0.000421, 24: 0.000466, 25: 0.000520, 26: 0.000581, 27: 0.000630, 28: 0.000677, 29: 0.000720,
+      30: 0.000763, 31: 0.000799, 32: 0.000824, 33: 0.000833, 34: 0.000830, 35: 0.000823, 36: 0.000819, 37: 0.000824, 38: 0.000836, 39: 0.000853,
+      40: 0.000879, 41: 0.000909, 42: 0.000945, 43: 0.000980, 44: 0.001019, 45: 0.001065, 46: 0.001132, 47: 0.001225, 48: 0.001345, 49: 0.001485,
+      50: 0.001656, 51: 0.001874, 52: 0.002121, 53: 0.002397, 54: 0.002701, 55: 0.003032, 56: 0.003390, 57: 0.003774, 58: 0.004181, 59: 0.004613,
+      60: 0.005071, 61: 0.005554, 62: 0.006071, 63: 0.006624, 64: 0.007225, 65: 0.007884, 66: 0.008238, 67: 0.008659, 68: 0.009163, 69: 0.009767,
+      70: 0.010491, 71: 0.011358, 72: 0.012385, 73: 0.013598, 74: 0.015014, 75: 0.016670, 76: 0.018587, 77: 0.020815, 78: 0.023391, 79: 0.026387,
+      80: 0.029850, 81: 0.033883, 82: 0.038544, 83: 0.043880, 84: 0.049956, 85: 0.056799, 86: 0.064436, 87: 0.072882, 88: 0.082137, 89: 0.092172,
+      90: 0.102919, 91: 0.114344, 92: 0.126605, 93: 0.139936, 94: 0.154844, 95: 0.171902, 96: 0.187210, 97: 0.204659, 98: 0.222921, 99: 0.241884,
+      100: 0.261476, 101: 0.281536, 102: 0.301847, 103: 0.322371, 104: 0.342940, 105: 0.361261, 106: 0.372886, 107: 0.381098, 108: 0.383358, 109: 0.385709,
+      110: 0.388092, 111: 0.390353, 112: 0.392822, 113: 0.395188, 114: 0.397567, 115: 0.400000, 116: 0.400000, 117: 0.400000, 118: 0.400000, 119: 0.400000,
+      120: 0.400000
+    };
 
-        // Default birthdate to 55 years ago
-        const defaultBirth = new Date(today.getFullYear() - 55, today.getMonth(), today.getDate());
-        document.getElementById('birthdate').value = defaultBirth.toISOString().split('T')[0];
+    // Defaults
+    document.addEventListener("DOMContentLoaded", function () {
+      const today = new Date();
+      document.getElementById("startDate").value = today.toISOString().split("T")[0];
+
+      // Default birthdate to 55 years ago
+      const defaultBirth = new Date(today.getFullYear() - 55, today.getMonth(), today.getDate());
+      document.getElementById("birthdate").value = defaultBirth.toISOString().split("T")[0];
     });
 
     function calculateAge(birthdate, targetDate) {
-        if (!birthdate || !targetDate) return 0;
-        const birth = new Date(birthdate + 'T00:00:00');
-        const target = new Date(targetDate + 'T00:00:00');
+      if (!birthdate || !targetDate) return 0;
+      const birth = new Date(birthdate + "T00:00:00");
+      const target = new Date(targetDate + "T00:00:00");
+      if (isNaN(birth.getTime()) || isNaN(target.getTime())) return 0;
 
-        if (isNaN(birth.getTime()) || isNaN(target.getTime())) return 0;
-
-        let age = target.getFullYear() - birth.getFullYear();
-        const monthDiff = target.getMonth() - birth.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && target.getDate() < birth.getDate())) {
-            age--;
-        }
-        return Math.max(0, age);
+      let age = target.getFullYear() - birth.getFullYear();
+      const monthDiff = target.getMonth() - birth.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && target.getDate() < birth.getDate())) age--;
+      return Math.max(0, age);
     }
 
-    function getLifeExpectancy(age, tableType) {
-        age = Math.max(0, Math.min(120, Math.floor(age)));
+    function getDivisorOrLifeExpectancy(age, tableType) {
+      const a = Math.max(0, Math.min(120, Math.floor(age)));
 
-        if (tableType === 'single') {
-            return singleLifeTable[age] || singleLifeTable[120];
-        } else if (tableType === 'uniform') {
-            return uniformLifetimeTable[age] || uniformLifetimeTable[72];
-        }
-        return singleLifeTable[age] || 20;
+      if (tableType === "single") {
+        return singleLifeTable[a] ?? singleLifeTable[120];
+      }
+
+      // Uniform Lifetime Table is defined (in CFR Table 2) starting at age 72.
+      if (tableType === "uniform") {
+        return uniformLifetimeTable[a] ?? null;
+      }
+
+      return singleLifeTable[a] ?? singleLifeTable[120];
     }
 
-    // RMD Method: Balance / Life Expectancy
-    function calculateRMD(balance, lifeExpectancy) {
-        if (lifeExpectancy <= 0) return 0;
-        return balance / lifeExpectancy;
+    // RMD Method: Balance / Divisor
+    function calculateRMD(balance, divisor) {
+      if (!divisor || divisor <= 0) return 0;
+      return balance / divisor;
     }
 
-    // Amortization Method: Balance / PV Annuity Factor
-    // PV Annuity Factor = (1 - (1+r)^-n) / r
-    // This matches IRS examples in Notice 2022-6
-    function calculateAmortization(balance, lifeExpectancy, annualRate) {
-        const r = annualRate / 100;
-        if (r === 0) {
-            return balance / lifeExpectancy;
-        }
-        const pvFactor = (1 - Math.pow(1 + r, -lifeExpectancy)) / r;
-        return balance / pvFactor;
+    // Amortization Method: Level payment over "n" years at rate r
+    // PV factor = (1 - (1+r)^-n) / r
+    function calculateAmortization(balance, n, annualRatePct) {
+      const r = annualRatePct / 100;
+      if (n <= 0) return 0;
+      if (r === 0) return balance / n;
+      const pvFactor = (1 - Math.pow(1 + r, -n)) / r;
+      return balance / pvFactor;
     }
 
-    // Annuitization Method: Balance / Annuity Factor
-    // Uses mortality-weighted present value calculation
-    function calculateAnnuitization(balance, age, annualRate) {
-        if (isNaN(balance) || isNaN(age) || isNaN(annualRate)) {
-            return 0;
-        }
+    // Annuitization Method: balance / annuity factor
+    // annuity factor = sum_{t=1..} [Pr(alive at end of year t) / (1+r)^t]
+    // Uses CFR Table 4 mortality rates (qx).
+    function calculateAnnuitization(balance, age, annualRatePct) {
+      const r = annualRatePct / 100;
+      const startAge = Math.max(0, Math.min(120, Math.floor(age)));
 
-        const r = annualRate / 100;
-        const floorAge = Math.floor(age);
-        const baseLE = singleLifeTable[Math.min(Math.max(0, floorAge), 120)] || 20;
+      if (balance <= 0) return 0;
 
-        if (baseLE <= 0) return balance / 20;
+      let survival = 1.0;
+      let annuityFactor = 0.0;
 
-        let annuityFactor = 0;
+      // iterate yearly payments; cap to avoid infinite loops
+      for (let t = 1; t <= 200; t++) {
+        const currentAge = startAge + (t - 1);
+        if (currentAge > 120) break;
 
-        // Calculate mortality-weighted present value of $1 annuity for life
-        for (let t = 0; t <= 100; t++) {
-            const futureAge = floorAge + t;
-            if (futureAge > 120) break;
+        const qx = mortalityQx[currentAge];
+        if (typeof qx !== "number") break;
 
-            const futureLE = singleLifeTable[Math.min(futureAge, 120)] || 0.5;
-            
-            // Survival probability approximation
-            const survivalProb = Math.max(0, Math.min(1, futureLE / baseLE));
-            
-            // Present value factor
-            const pvFactor = r > 0 ? Math.pow(1 + r, -t) : 1;
+        // survive through this year to be alive at end of year t
+        survival *= (1 - qx);
 
-            annuityFactor += survivalProb * pvFactor;
+        const pv = r > 0 ? Math.pow(1 + r, -t) : 1.0;
+        annuityFactor += survival * pv;
 
-            if (survivalProb < 0.001) break;
-        }
+        if (survival < 1e-10) break;
+      }
 
-        annuityFactor = Math.max(1, annuityFactor);
-
-        const result = balance / annuityFactor;
-        return isNaN(result) || !isFinite(result) ? 0 : result;
+      if (!(annuityFactor > 0) || !isFinite(annuityFactor)) return 0;
+      return balance / annuityFactor;
     }
 
     function formatCurrency(amount) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(amount);
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
     }
 
     function calculate() {
-        const birthdate = document.getElementById('birthdate').value;
-        const startDate = document.getElementById('startDate').value;
-        const balance = parseFloat(document.getElementById('balance').value);
-        const interestRate = parseFloat(document.getElementById('interestRate').value);
-        const tableType = document.getElementById('lifeExpTable').value;
+      const birthdate = document.getElementById("birthdate").value;
+      const startDate = document.getElementById("startDate").value;
+      const balance = parseFloat(document.getElementById("balance").value);
+      const interestRate = parseFloat(document.getElementById("interestRate").value);
+      let tableType = document.getElementById("lifeExpTable").value;
 
-        // Validation
-        if (!birthdate || !startDate || isNaN(balance) || balance <= 0) {
-            alert('Please fill in all required fields with valid values.');
-            return;
+      const noteEl = document.getElementById("tableNote");
+      noteEl.classList.add("hidden");
+      noteEl.textContent = "";
+
+      if (!birthdate || !startDate || isNaN(balance) || balance <= 0) {
+        alert("Please fill in all required fields with valid values.");
+        return;
+      }
+
+      if (isNaN(interestRate) || interestRate < 0 || interestRate > 10) {
+        alert("Please enter a valid interest rate between 0% and 10%.");
+        return;
+      }
+
+      const age = calculateAge(birthdate, startDate);
+
+      if (age >= 60) {
+        if (!confirm("You are " + age + " years old. 72(t) SEPP is typically for those under 59½. Continue anyway?")) {
+          return;
         }
+      }
 
-        if (isNaN(interestRate) || interestRate < 0 || interestRate > 10) {
-            alert('Please enter a valid interest rate between 0% and 10%.');
-            return;
+      if (age < 30) {
+        if (!confirm("You are " + age + " years old. 72(t) SEPP is typically used closer to retirement age. Continue anyway?")) {
+          return;
         }
+      }
 
-        const age = calculateAge(birthdate, startDate);
+      // divisor / life expectancy
+      let divisor = getDivisorOrLifeExpectancy(age, tableType);
 
-        if (age < 0 || age > 120) {
-            alert('Please enter valid dates. Calculated age: ' + age);
-            return;
-        }
+      // If uniform selected but age < 72, CFR Table 2 has no divisor; fall back to single and warn.
+      if (tableType === "uniform" && (divisor === null || divisor === undefined)) {
+        tableType = "single";
+        divisor = getDivisorOrLifeExpectancy(age, tableType);
+        noteEl.textContent = "Note: The Uniform Lifetime Table divisor is only defined starting at age 72 in the CFR table. For ages under 72, this calculator falls back to the Single Life Table.";
+        noteEl.classList.remove("hidden");
+      }
 
-        if (age >= 60) {
-            if (!confirm('You are ' + age + ' years old. 72(t) SEPP is typically for those under 59½. Continue anyway?')) {
-                return;
-            }
-        }
+      // Calculations
+      const rmdAmount = calculateRMD(balance, divisor);
+      const amortAmount = calculateAmortization(balance, divisor, interestRate);
+      const annuitAmount = calculateAnnuitization(balance, age, interestRate);
 
-        if (age < 30) {
-            if (!confirm('You are ' + age + ' years old. 72(t) SEPP is typically used closer to retirement age. Continue anyway?')) {
-                return;
-            }
-        }
+      // SEPP duration
+      const birthDateObj = new Date(birthdate + "T00:00:00");
+      const startDateObj = new Date(startDate + "T00:00:00");
 
-        const lifeExpectancy = getLifeExpectancy(age, tableType);
+      const age59_5 = new Date(birthDateObj);
+      age59_5.setFullYear(birthDateObj.getFullYear() + 59);
+      age59_5.setMonth(birthDateObj.getMonth() + 6);
 
-        // Calculate all three methods
-        const rmdAmount = calculateRMD(balance, lifeExpectancy);
-        const amortAmount = calculateAmortization(balance, lifeExpectancy, interestRate);
-        const annuitAmount = calculateAnnuitization(balance, age, interestRate);
+      const fiveYearsLater = new Date(startDateObj);
+      fiveYearsLater.setFullYear(startDateObj.getFullYear() + 5);
 
-        // Calculate SEPP duration
-        const birthDateObj = new Date(birthdate + 'T00:00:00');
-        const startDateObj = new Date(startDate + 'T00:00:00');
+      const seppEndDate = age59_5 > fiveYearsLater ? age59_5 : fiveYearsLater;
+      const durationMs = seppEndDate.getTime() - startDateObj.getTime();
+      const durationYears = durationMs / (365.25 * 24 * 60 * 60 * 1000);
 
-        // Date when person turns 59.5
-        const age59_5 = new Date(birthDateObj);
-        age59_5.setFullYear(birthDateObj.getFullYear() + 59);
-        age59_5.setMonth(birthDateObj.getMonth() + 6);
+      // Display
+      document.getElementById("rmdAmount").textContent = formatCurrency(rmdAmount);
+      document.getElementById("rmdMonthly").textContent = formatCurrency(rmdAmount / 12) + "/month";
 
-        // 5 years from start
-        const fiveYearsLater = new Date(startDateObj);
-        fiveYearsLater.setFullYear(startDateObj.getFullYear() + 5);
+      document.getElementById("amortAmount").textContent = formatCurrency(amortAmount);
+      document.getElementById("amortMonthly").textContent = formatCurrency(amortAmount / 12) + "/month";
 
-        // SEPP ends at the LATER of these two dates
-        const seppEndDate = age59_5 > fiveYearsLater ? age59_5 : fiveYearsLater;
-        const durationMs = seppEndDate.getTime() - startDateObj.getTime();
-        const durationYears = durationMs / (365.25 * 24 * 60 * 60 * 1000);
+      document.getElementById("annuitAmount").textContent = formatCurrency(annuitAmount);
+      document.getElementById("annuitMonthly").textContent = formatCurrency(annuitAmount / 12) + "/month";
 
-        // Display results
-        document.getElementById('rmdAmount').textContent = formatCurrency(rmdAmount);
-        document.getElementById('rmdMonthly').textContent = formatCurrency(rmdAmount / 12) + '/month';
+      document.getElementById("calcAge").textContent = age + " years";
+      document.getElementById("calcLifeExp").textContent = (typeof divisor === "number" ? divisor.toFixed(1) : "-");
+      document.getElementById("calcRate").textContent = interestRate.toFixed(2) + "%";
+      document.getElementById("calcBalance").textContent = formatCurrency(balance);
 
-        document.getElementById('amortAmount').textContent = formatCurrency(amortAmount);
-        document.getElementById('amortMonthly').textContent = formatCurrency(amortAmount / 12) + '/month';
+      const endDateStr = seppEndDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      document.getElementById("seppDuration").textContent = durationYears.toFixed(1) + " years (until " + endDateStr + ")";
 
-        document.getElementById('annuitAmount').textContent = formatCurrency(annuitAmount);
-        document.getElementById('annuitMonthly').textContent = formatCurrency(annuitAmount / 12) + '/month';
+      const reason = age59_5 > fiveYearsLater ? "age 59½" : "5 years from start";
+      document.getElementById("seppEndDate").textContent = "Ends at " + reason + ", whichever is later";
 
-        document.getElementById('calcAge').textContent = age + ' years';
-        document.getElementById('calcLifeExp').textContent = lifeExpectancy.toFixed(1) + ' years';
-        document.getElementById('calcRate').textContent = interestRate.toFixed(2) + '%';
-        document.getElementById('calcBalance').textContent = formatCurrency(balance);
-
-        const endDateStr = seppEndDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
-        document.getElementById('seppDuration').textContent = durationYears.toFixed(1) + ' years (until ' + endDateStr + ')';
-        
-        const reason = age59_5 > fiveYearsLater ? 'age 59½' : '5 years from start';
-        document.getElementById('seppEndDate').textContent = 'Ends at ' + reason + ', whichever is later';
-
-        document.getElementById('results').classList.remove('hidden');
-        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById("results").classList.remove("hidden");
+      document.getElementById("results").scrollIntoView({ behavior: "smooth" });
     }
-</script>
-```
-
+  </script>
 </body>
 </html>
