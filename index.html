@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VFNFGEXSFD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-VFNFGEXSFD');
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IRS Rule 72(t) SEPP Calculator</title>
@@ -351,18 +361,31 @@
         </div>
       </div>
 
+      <div class="info-section">
+        <h3 style="font-size: 0.9375rem; margin-bottom: 0.5rem;">Calculation Breakdown</h3>
+        <div id="calcBreakdown" style="font-size: 0.8125rem; line-height: 1.8; color: var(--text-muted);"></div>
+      </div>
+
       <div class="method-descriptions">
         <div class="method-desc">
           <h5>RMD Method (Recalculated Annually)</h5>
-          <p>Balance ÷ divisor. Recalculated each year based on account value. Generally produces the <strong>lowest</strong> payment. Amount varies annually.</p>
+          <p><strong>Formula:</strong> Annual Payment = Account Balance ÷ Life Expectancy Divisor</p>
+          <p>Recalculated each year based on current account value and updated divisor from IRS life expectancy tables. Generally produces the <strong>lowest</strong> payment. Amount varies annually.</p>
+          <p><strong>Source:</strong> <a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf" target="_blank" rel="noopener">IRS Notice 2022-6</a>, <a href="https://www.ecfr.gov/current/title-26/section-1.401(a)(9)-9" target="_blank" rel="noopener">26 CFR §1.401(a)(9)-9</a></p>
         </div>
         <div class="method-desc">
           <h5>Fixed Amortization Method</h5>
-          <p>Uses life expectancy and interest rate to compute a level annual payment. <strong>Fixed payment</strong> each year.</p>
+          <p><strong>Formula:</strong> Annual Payment = Account Balance ÷ PV Factor</p>
+          <p>Where PV Factor = (1 - (1+r)<sup>-n</sup>) / r</p>
+          <p>Uses life expectancy (n years) and interest rate (r) to compute a level annual payment. <strong>Fixed payment</strong> each year.</p>
+          <p><strong>Source:</strong> <a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf" target="_blank" rel="noopener">IRS Notice 2022-6</a></p>
         </div>
         <div class="method-desc">
           <h5>Fixed Annuitization Method</h5>
-          <p>Uses an annuity factor derived from IRS mortality rates (Table 4) and the chosen interest rate. <strong>Fixed payment</strong> each year.</p>
+          <p><strong>Formula:</strong> Annual Payment = Account Balance ÷ Annuity Factor</p>
+          <p>Where Annuity Factor = Σ [Survival Probability × (1+r)<sup>-t</sup>]</p>
+          <p>Uses an annuity factor derived from IRS mortality rates (<a href="https://www.ecfr.gov/current/title-26/section-1.401(a)(9)-9" target="_blank" rel="noopener">26 CFR §1.401(a)(9)-9(e), Table 4</a>) and the chosen interest rate. <strong>Fixed payment</strong> each year.</p>
+          <p><strong>Source:</strong> <a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf" target="_blank" rel="noopener">IRS Notice 2022-6</a>, <a href="https://www.ecfr.gov/current/title-26/section-1.401(a)(9)-9" target="_blank" rel="noopener">26 CFR §1.401(a)(9)-9</a></p>
         </div>
       </div>
 
@@ -382,6 +405,34 @@
         Section 72(t) allows penalty-free early withdrawals from IRAs and qualified plans before age 59½ through SEPP.
         The IRS provides three approved calculation methods: RMD, Fixed Amortization, and Fixed Annuitization.
       </p>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">IRS References & Documentation</h2>
+      <div style="font-size: 0.875rem; line-height: 1.8;">
+        <p style="margin-bottom: 0.75rem;"><strong>Primary Guidance:</strong></p>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+          <li><a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf" target="_blank" rel="noopener">IRS Notice 2022-6</a> - Current guidance on SEPP calculations (supersedes Rev. Rul. 2002-62)</li>
+          <li><a href="https://www.irs.gov/pub/irs-drop/rr-02-62.pdf" target="_blank" rel="noopener">Revenue Ruling 2002-62</a> - Original SEPP calculation guidance (historical reference)</li>
+          <li><a href="https://www.irs.gov/retirement-plans/substantially-equal-periodic-payments" target="_blank" rel="noopener">IRS SEPP Overview</a> - General information on 72(t) distributions</li>
+        </ul>
+        <p style="margin-bottom: 0.75rem;"><strong>Life Expectancy & Mortality Tables:</strong></p>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+          <li><a href="https://www.ecfr.gov/current/title-26/section-1.401(a)(9)-9" target="_blank" rel="noopener">26 CFR §1.401(a)(9)-9</a> - Life expectancy and distribution period tables
+            <ul style="margin-left: 1.5rem; margin-top: 0.25rem;">
+              <li>Table 1 (Single Life Table) - §1.401(a)(9)-9(b)</li>
+              <li>Table 2 (Uniform Lifetime Table) - §1.401(a)(9)-9(c)</li>
+              <li>Table 4 (Mortality Rates) - §1.401(a)(9)-9(e)</li>
+            </ul>
+          </li>
+          <li><a href="https://apps.irs.gov/app/picklist/list/federalRates.html" target="_blank" rel="noopener">IRS Applicable Federal Rates (AFR)</a> - Current federal mid-term rates</li>
+        </ul>
+        <p style="margin-bottom: 0.75rem;"><strong>Interest Rate Rules:</strong></p>
+        <ul style="margin-left: 1.5rem;">
+          <li>Per Notice 2022-6: Use the <strong>greater of 5% or 120% of the federal mid-term rate</strong> for amortization and annuitization methods</li>
+          <li>This 5% floor represents a significant increase from prior guidance and allows for higher distribution amounts</li>
+        </ul>
+      </div>
     </div>
   </div>
 
@@ -613,6 +664,43 @@
 
       const reason = age59_5 > fiveYearsLater ? "age 59½" : "5 years from start";
       document.getElementById("seppEndDate").textContent = "Ends at " + reason + ", whichever is later";
+
+      // Display calculation breakdown
+      const r = interestRate / 100;
+      const pvFactor = r === 0 ? divisor : (1 - Math.pow(1 + r, -divisor)) / r;
+
+      // Calculate annuity factor for display
+      let survival = 1.0;
+      let annuityFactor = 0.0;
+      const startAge = Math.max(0, Math.min(120, Math.floor(age)));
+      for (let t = 1; t <= 200; t++) {
+        const currentAge = startAge + (t - 1);
+        if (currentAge > 120) break;
+        const qx = mortalityQx[currentAge];
+        if (typeof qx !== "number") break;
+        survival *= (1 - qx);
+        const pv = r > 0 ? Math.pow(1 + r, -t) : 1.0;
+        annuityFactor += survival * pv;
+        if (survival < 1e-10) break;
+      }
+
+      const breakdownHTML = `
+        <div style="margin-bottom: 1rem;">
+          <strong>RMD Method:</strong><br>
+          Annual Payment = $${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ÷ ${divisor.toFixed(1)} = ${formatCurrency(rmdAmount)}
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <strong>Fixed Amortization Method:</strong><br>
+          PV Factor = (1 - (1 + ${r.toFixed(4)})<sup>-${divisor.toFixed(1)}</sup>) / ${r.toFixed(4)} = ${pvFactor.toFixed(4)}<br>
+          Annual Payment = $${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ÷ ${pvFactor.toFixed(4)} = ${formatCurrency(amortAmount)}
+        </div>
+        <div>
+          <strong>Fixed Annuitization Method:</strong><br>
+          Annuity Factor (from CFR Table 4 mortality rates) = ${annuityFactor.toFixed(4)}<br>
+          Annual Payment = $${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ÷ ${annuityFactor.toFixed(4)} = ${formatCurrency(annuitAmount)}
+        </div>
+      `;
+      document.getElementById("calcBreakdown").innerHTML = breakdownHTML;
 
       document.getElementById("results").classList.remove("hidden");
       document.getElementById("results").scrollIntoView({ behavior: "smooth" });
