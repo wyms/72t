@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -18,6 +19,7 @@
     name="description"
     content="Calculate Substantially Equal Periodic Payments (SEPP) for penalty-free early IRA withdrawals using IRS-approved methods: RMD, Amortization, and Annuitization."
   />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --primary: #1e40af;
@@ -239,6 +241,18 @@
       font-size: 0.8125rem;
       color: var(--text-muted);
     }
+
+    .chart-container {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      position: relative;
+      height: 400px;
+    }
+
+    @media (max-width: 640px) {
+      .chart-container { height: 300px; }
+    }
   </style>
 </head>
 
@@ -296,6 +310,12 @@
             <option value="uniform">Uniform Lifetime Table (72+)</option>
           </select>
           <span class="help-text">Single Life typically yields higher payments</span>
+        </div>
+
+        <div class="form-group">
+          <label for="growthRate">Expected Annual Growth Rate (%)</label>
+          <input type="number" id="growthRate" min="-10" max="15" step="0.1" value="3.5" />
+          <span class="help-text">For account balance projection chart</span>
         </div>
       </div>
 
@@ -364,6 +384,17 @@
       <div class="info-section">
         <h3 style="font-size: 0.9375rem; margin-bottom: 0.5rem;">Calculation Breakdown</h3>
         <div id="calcBreakdown" style="font-size: 0.8125rem; line-height: 1.8; color: var(--text-muted);"></div>
+      </div>
+
+      <div class="info-section">
+        <h3 style="font-size: 0.9375rem; margin-bottom: 0.5rem;">Account Balance Projection</h3>
+        <p id="chartDescription" style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">
+          This chart shows how your account balance will change over the SEPP duration for each method.
+          If your account depletes, the line will reach $0.
+        </p>
+        <div class="chart-container">
+          <canvas id="balanceChart"></canvas>
+        </div>
       </div>
 
       <div class="method-descriptions">
@@ -578,11 +609,199 @@
       }).format(amount);
     }
 
+    // Project account balance for RMD method
+    function projectRMD(initialBalance, startAge, years, growthRate, tableType) {
+      let balance = initialBalance;
+      const projections = [{year: 0, balance: initialBalance}];
+      let depleted = false;
+
+      for (let year = 1; year <= years; year++) {
+        if (depleted) {
+          projections.push({year, balance: 0});
+          continue;
+        }
+
+        const currentAge = startAge + year;
+        const divisor = getDivisorOrLifeExpectancy(currentAge, tableType);
+
+        if (!divisor || divisor <= 0) {
+          projections.push({year, balance: 0});
+          depleted = true;
+          continue;
+        }
+
+        const distribution = balance / divisor;
+        balance = (balance - distribution) * (1 + growthRate / 100);
+        balance = Math.max(0, balance);
+        projections.push({year, balance});
+
+        if (balance === 0) {
+          depleted = true;
+        }
+      }
+
+      return projections;
+    }
+
+    // Project account balance for fixed payment methods (Amortization & Annuitization)
+    function projectFixedPayment(initialBalance, annualPayment, years, growthRate) {
+      let balance = initialBalance;
+      const projections = [{year: 0, balance: initialBalance}];
+      let depleted = false;
+
+      for (let year = 1; year <= years; year++) {
+        if (depleted) {
+          projections.push({year, balance: 0});
+          continue;
+        }
+
+        balance = (balance - annualPayment) * (1 + growthRate / 100);
+        balance = Math.max(0, balance);
+        projections.push({year, balance});
+
+        if (balance === 0) {
+          depleted = true;
+        }
+      }
+
+      return projections;
+    }
+
+    // Global chart instance
+    let balanceChartInstance = null;
+
+    // Render the projection chart
+    function renderBalanceChart(rmdData, amortData, annuitData) {
+      const ctx = document.getElementById('balanceChart').getContext('2d');
+
+      // Destroy existing chart if it exists
+      if (balanceChartInstance) {
+        balanceChartInstance.destroy();
+      }
+
+      // Find max years to display
+      const maxYears = Math.max(
+        rmdData[rmdData.length - 1].year,
+        amortData[amortData.length - 1].year,
+        annuitData[annuitData.length - 1].year
+      );
+
+      balanceChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({length: maxYears + 1}, (_, i) => i),
+          datasets: [
+            {
+              label: 'RMD Method',
+              data: rmdData.map(d => d.balance),
+              borderColor: 'rgb(5, 150, 105)',
+              backgroundColor: 'rgba(5, 150, 105, 0.1)',
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              tension: 0.1
+            },
+            {
+              label: 'Amortization Method',
+              data: amortData.map(d => d.balance),
+              borderColor: 'rgb(124, 58, 237)',
+              backgroundColor: 'rgba(124, 58, 237, 0.1)',
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              tension: 0.1
+            },
+            {
+              label: 'Annuitization Method',
+              data: annuitData.map(d => d.balance),
+              borderColor: 'rgb(220, 38, 38)',
+              backgroundColor: 'rgba(220, 38, 38, 0.1)',
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 12,
+                  family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              bodySpacing: 6,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  label += formatCurrency(context.parsed.y);
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Year',
+                font: {
+                  size: 13,
+                  weight: '600'
+                }
+              },
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Account Balance',
+                font: {
+                  size: 13,
+                  weight: '600'
+                }
+              },
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString('en-US', {maximumFractionDigits: 0});
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            }
+          }
+        }
+      });
+    }
+
     function calculate() {
       const birthdate = document.getElementById("birthdate").value;
       const startDate = document.getElementById("startDate").value;
       const balance = parseFloat(document.getElementById("balance").value);
       const interestRate = parseFloat(document.getElementById("interestRate").value);
+      const growthRate = parseFloat(document.getElementById("growthRate").value);
       let tableType = document.getElementById("lifeExpTable").value;
 
       const noteEl = document.getElementById("tableNote");
@@ -596,6 +815,11 @@
 
       if (isNaN(interestRate) || interestRate < 0 || interestRate > 10) {
         alert("Please enter a valid interest rate between 0% and 10%.");
+        return;
+      }
+
+      if (isNaN(growthRate) || growthRate < -10 || growthRate > 15) {
+        alert("Please enter a valid growth rate between -10% and 15%.");
         return;
       }
 
@@ -701,6 +925,26 @@
         </div>
       `;
       document.getElementById("calcBreakdown").innerHTML = breakdownHTML;
+
+      // Update chart description with growth rate
+      const chartDesc = document.getElementById("chartDescription");
+      if (growthRate === 0) {
+        chartDesc.textContent = "This chart shows how your account balance will change over the SEPP duration for each method, assuming 0% growth (conservative estimate). If your account depletes, the line will reach $0.";
+      } else if (growthRate > 0) {
+        chartDesc.textContent = `This chart shows how your account balance will change over the SEPP duration for each method, assuming ${growthRate.toFixed(1)}% annual growth. If your account depletes, the line will reach $0.`;
+      } else {
+        chartDesc.textContent = `This chart shows how your account balance will change over the SEPP duration for each method, assuming ${growthRate.toFixed(1)}% annual decline. If your account depletes, the line will reach $0.`;
+      }
+
+      // Generate projections for the chart
+      const projectionYears = Math.ceil(durationYears);
+
+      const rmdProjection = projectRMD(balance, age, projectionYears, growthRate, tableType);
+      const amortProjection = projectFixedPayment(balance, amortAmount, projectionYears, growthRate);
+      const annuitProjection = projectFixedPayment(balance, annuitAmount, projectionYears, growthRate);
+
+      // Render the balance projection chart
+      renderBalanceChart(rmdProjection, amortProjection, annuitProjection);
 
       document.getElementById("results").classList.remove("hidden");
       document.getElementById("results").scrollIntoView({ behavior: "smooth" });
