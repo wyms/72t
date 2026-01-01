@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -253,6 +252,94 @@
     @media (max-width: 640px) {
       .chart-container { height: 300px; }
     }
+
+    .mode-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      background: #f1f5f9;
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 0.625rem 1rem;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .mode-btn:hover:not(.active) {
+      background: rgba(0,0,0,0.05);
+    }
+
+    .export-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .export-btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 0.625rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .export-btn:hover {
+      background: var(--bg);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .export-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    @media print {
+      .export-actions, .mode-toggle, .btn, .card > h2 svg, nav, header .subtitle {
+        display: none !important;
+      }
+
+      body {
+        background: white;
+      }
+
+      .card {
+        box-shadow: none;
+        border: 1px solid #e2e8f0;
+        page-break-inside: avoid;
+      }
+
+      .chart-container {
+        page-break-inside: avoid;
+      }
+    }
   </style>
 </head>
 
@@ -264,20 +351,52 @@
     </header>
 
     <div class="card">
-      <h2 class="card-title">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-        </svg>
-        Enter Your Information
-      </h2>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="forwardModeBtn" onclick="switchMode('forward')">
+          Calculate Payment from Balance
+        </button>
+        <button class="mode-btn" id="reverseModeBtn" onclick="switchMode('reverse')">
+          Calculate Balance from Target Income
+        </button>
+      </div>
 
-      <div class="rate-info">
+      <div id="forwardCalculator">
+        <h2 class="card-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          Enter Your Information
+        </h2>
+
+        <div class="rate-info">
         <strong>Interest Rate Note:</strong>
         Per <a href="https://www.irs.gov/pub/irs-drop/n-22-06.pdf" target="_blank" rel="noopener">IRS Notice 2022-6</a>,
-        you may use any rate up to the <strong>greater of 5% or 120% of the federal mid-term rate</strong>.
-        Always verify the applicable AFR on
-        <a href="https://apps.irs.gov/app/picklist/list/federalRates.html" target="_blank" rel="noopener">IRS.gov</a>.
+        you may use any rate <strong>up to</strong> the greater of 5% or 120% of the federal mid-term rate.
+        You can choose a <strong>lower</strong> rate (including 0%) for more conservative distributions.
+        Higher rates produce higher payments.
+      </div>
+
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 0.875rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div style="flex: 1; min-width: 200px;">
+            <div style="font-size: 0.75rem; font-weight: 600; color: #1e40af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Current Federal Mid-Term AFR</div>
+            <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+              <input type="number" id="currentAFR" min="0" max="10" step="0.01" value="4.24"
+                style="width: 80px; padding: 0.25rem 0.5rem; border: 1px solid #bfdbfe; border-radius: 4px; font-size: 0.875rem;"
+                oninput="updateMaxRate()" />
+              <span style="font-size: 0.875rem; color: #64748b;">%</span>
+            </div>
+            <div style="font-size: 0.6875rem; color: #64748b; margin-top: 0.25rem;">
+              <a href="https://www.irs.gov/applicable-federal-rates" target="_blank" rel="noopener" style="color: #3b82f6;">Update from IRS.gov</a>
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <div style="font-size: 0.75rem; font-weight: 600; color: #1e40af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Maximum Allowed Rate</div>
+            <div style="font-size: 1.25rem; font-weight: 700; color: #059669;" id="maxAllowedRate">5.09%</div>
+            <div style="font-size: 0.6875rem; color: #64748b; margin-top: 0.25rem;">Greater of 5% or 120% of AFR</div>
+          </div>
+        </div>
       </div>
 
       <div class="form-grid">
@@ -299,8 +418,15 @@
 
         <div class="form-group">
           <label for="interestRate">Interest Rate (%)</label>
-          <input type="number" id="interestRate" min="0" max="10" step="0.01" value="5.00" />
-          <span class="help-text">Max is IRS-limited (Notice 2022-6)</span>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="number" id="interestRate" min="0" max="10" step="0.01" value="5.00" style="flex: 1;" />
+            <button type="button" onclick="useMaxRate()"
+              style="padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--primary); font-size: 0.75rem; cursor: pointer; white-space: nowrap;"
+              title="Use maximum allowed rate">
+              Use Max
+            </button>
+          </div>
+          <span class="help-text">0% to <span id="maxRateHelper">5.09</span>% (higher = higher payments)</span>
         </div>
 
         <div class="form-group">
@@ -317,10 +443,154 @@
           <input type="number" id="growthRate" min="-10" max="15" step="0.1" value="3.5" />
           <span class="help-text">For account balance projection chart</span>
         </div>
+
+        <div class="form-group">
+          <label for="filingStatus">Tax Filing Status</label>
+          <select id="filingStatus">
+            <option value="single">Single</option>
+            <option value="married" selected>Married Filing Jointly</option>
+          </select>
+          <span class="help-text">For federal tax estimation</span>
+        </div>
+
+        <div class="form-group">
+          <label for="otherIncome">Other Annual Income ($)</label>
+          <input type="number" id="otherIncome" min="0" step="1000" value="0" />
+          <span class="help-text">Non-SEPP income (wages, SS, etc.)</span>
+        </div>
+
+        <div class="form-group">
+          <label for="stateSelect">State (for tax estimation)</label>
+          <select id="stateSelect">
+            <option value="none">No State Tax</option>
+          </select>
+          <span class="help-text">Optional state income tax</span>
+        </div>
       </div>
 
-      <button class="btn" onclick="calculate()">Calculate SEPP Amounts</button>
-      <div id="tableNote" class="inline-note hidden"></div>
+        <button class="btn" onclick="calculate()">Calculate SEPP Amounts</button>
+        <div id="tableNote" class="inline-note hidden"></div>
+      </div>
+
+      <div id="reverseCalculator" class="hidden">
+        <h2 class="card-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          Target Income Calculator
+        </h2>
+
+        <div class="rate-info">
+          <strong>Planning Tool:</strong>
+          Enter your desired annual income to see the required IRA balance needed for each SEPP method.
+          This helps you plan before committing to a 72(t) distribution strategy.
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="reverseBirthdate">Date of Birth</label>
+            <input type="date" id="reverseBirthdate" required />
+          </div>
+
+          <div class="form-group">
+            <label for="reverseStartDate">SEPP Start Date</label>
+            <input type="date" id="reverseStartDate" required />
+            <span class="help-text">When distributions will begin</span>
+          </div>
+
+          <div class="form-group">
+            <label for="targetIncome">Target Annual Income ($)</label>
+            <input type="number" id="targetIncome" min="1" step="1" placeholder="100000" required />
+            <span class="help-text">Desired annual distribution amount</span>
+          </div>
+
+          <div class="form-group">
+            <label for="reverseInterestRate">Interest Rate (%)</label>
+            <input type="number" id="reverseInterestRate" min="0" max="10" step="0.01" value="5.00" />
+            <span class="help-text">Max is IRS-limited (Notice 2022-6)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="reverseLifeExpTable">Life Expectancy Table</label>
+            <select id="reverseLifeExpTable">
+              <option value="single" selected>Single Life Table</option>
+              <option value="uniform">Uniform Lifetime Table (72+)</option>
+            </select>
+            <span class="help-text">Single Life typically yields higher payments</span>
+          </div>
+        </div>
+
+        <button class="btn" onclick="calculateReverse()">Calculate Required Balance</button>
+        <div id="reverseTableNote" class="inline-note hidden"></div>
+      </div>
+    </div>
+
+    <div id="reverseResults" class="card hidden">
+      <h2 class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+          <polyline points="16 7 22 7 22 13" />
+        </svg>
+        Required Account Balances
+      </h2>
+
+      <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+        To achieve your target annual income of <strong id="reverseTargetDisplay">$0</strong>, you would need the following IRA balances:
+      </p>
+
+      <div class="results-grid">
+        <div class="result-card rmd">
+          <div class="result-method">RMD Method</div>
+          <div class="result-amount" id="reverseRmdBalance">$0</div>
+          <div class="result-monthly" style="font-size: 0.75rem; opacity: 0.85;">Required Balance</div>
+        </div>
+
+        <div class="result-card amortization">
+          <div class="result-method">Amortization Method</div>
+          <div class="result-amount" id="reverseAmortBalance">$0</div>
+          <div class="result-monthly" style="font-size: 0.75rem; opacity: 0.85;">Required Balance</div>
+        </div>
+
+        <div class="result-card annuitization">
+          <div class="result-method">Annuitization Method</div>
+          <div class="result-amount" id="reverseAnnuitBalance">$0</div>
+          <div class="result-monthly" style="font-size: 0.75rem; opacity: 0.85;">Required Balance</div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3 style="font-size: 0.9375rem; margin-bottom: 0.5rem;">Calculation Details</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Your Age at Start</span>
+            <span class="info-value" id="reverseCalcAge">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Life Expectancy / Divisor</span>
+            <span class="info-value" id="reverseCalcLifeExp">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Interest Rate Used</span>
+            <span class="info-value" id="reverseCalcRate">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Target Annual Income</span>
+            <span class="info-value" id="reverseCalcIncome">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3 style="font-size: 0.9375rem; margin-bottom: 0.5rem;">Reverse Calculation Formulas</h3>
+        <div id="reverseCalcBreakdown" style="font-size: 0.8125rem; line-height: 1.8; color: var(--text-muted);"></div>
+      </div>
+
+      <div class="warning-box">
+        <h4>💡 Planning Tip</h4>
+        <p>These are the <strong>starting balances</strong> needed to generate your target income. The RMD method requires the smallest balance but payments decrease over time. Fixed methods (Amortization/Annuitization) require larger balances but provide consistent payments.</p>
+      </div>
     </div>
 
     <div id="results" class="card hidden">
@@ -332,6 +602,31 @@
         </svg>
         Your 72(t) Distribution Options
       </h2>
+
+      <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Calculated on: <span id="calculationTimestamp">-</span>
+      </div>
+
+      <div class="export-actions">
+        <button class="export-btn" onclick="printResults()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Print / Save PDF
+        </button>
+        <button class="export-btn" onclick="copyShareableLink()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+          </svg>
+          Copy Shareable Link
+        </button>
+        <button class="export-btn" onclick="saveScenario()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+          </svg>
+          Save Scenario
+        </button>
+      </div>
 
       <div class="results-grid">
         <div class="result-card rmd">
@@ -357,6 +652,40 @@
         <h4>Required SEPP Duration</h4>
         <div class="duration" id="seppDuration">-</div>
         <div class="help-text" id="seppEndDate">-</div>
+      </div>
+
+      <div id="taxImpactSection" class="info-section" style="display: none;">
+        <h3 style="font-size: 0.9375rem; margin-bottom: 0.75rem;">After-Tax Income Estimates</h3>
+        <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+          Based on <span id="taxFilingStatusDisplay">-</span> filing status and <span id="taxStateDisplay">-</span> state tax.
+        </p>
+
+        <div class="results-grid" style="margin-top: 0.75rem;">
+          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 1rem; text-align: center;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #065f46; letter-spacing: 0.05em; margin-bottom: 0.25rem;">RMD After-Tax</div>
+            <div style="font-size: 1.25rem; font-weight: 700; color: #059669;" id="rmdAfterTax">$0</div>
+            <div style="font-size: 0.75rem; color: #065f46; margin-top: 0.25rem;" id="rmdAfterTaxMonthly">$0/month</div>
+          </div>
+
+          <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 1rem; text-align: center;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #6b21a8; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Amortization After-Tax</div>
+            <div style="font-size: 1.25rem; font-weight: 700; color: #7c3aed;" id="amortAfterTax">$0</div>
+            <div style="font-size: 0.75rem; color: #6b21a8; margin-top: 0.25rem;" id="amortAfterTaxMonthly">$0/month</div>
+          </div>
+
+          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1rem; text-align: center;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #991b1b; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Annuitization After-Tax</div>
+            <div style="font-size: 1.25rem; font-weight: 700; color: #dc2626;" id="annuitAfterTax">$0</div>
+            <div style="font-size: 0.75rem; color: #991b1b; margin-top: 0.25rem;" id="annuitAfterTaxMonthly">$0/month</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem; font-size: 0.8125rem; color: var(--text-muted);">
+          <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border);">
+            <span>Effective Tax Rate:</span>
+            <span id="effectiveTaxRate" style="font-weight: 600;">-</span>
+          </div>
+        </div>
       </div>
 
       <div class="info-section">
@@ -514,15 +843,228 @@
       120: 0.400000
     };
 
+    // 2025 Federal Tax Brackets (Single filer)
+    const federalTaxBracketsSingle = [
+      { min: 0, max: 11925, rate: 0.10 },
+      { min: 11925, max: 48475, rate: 0.12 },
+      { min: 48475, max: 103350, rate: 0.22 },
+      { min: 103350, max: 197300, rate: 0.24 },
+      { min: 197300, max: 250525, rate: 0.32 },
+      { min: 250525, max: 626350, rate: 0.35 },
+      { min: 626350, max: Infinity, rate: 0.37 }
+    ];
+
+    // 2025 Federal Tax Brackets (Married filing jointly)
+    const federalTaxBracketsMarried = [
+      { min: 0, max: 23850, rate: 0.10 },
+      { min: 23850, max: 96950, rate: 0.12 },
+      { min: 96950, max: 206700, rate: 0.22 },
+      { min: 206700, max: 394600, rate: 0.24 },
+      { min: 394600, max: 501050, rate: 0.32 },
+      { min: 501050, max: 751600, rate: 0.35 },
+      { min: 751600, max: Infinity, rate: 0.37 }
+    ];
+
+    // State tax rates (flat rates for simplicity, 2024-2025 estimates)
+    const stateTaxRates = {
+      "none": { name: "No State Tax", rate: 0 },
+      "AL": { name: "Alabama", rate: 0.05 },
+      "AK": { name: "Alaska", rate: 0 },
+      "AZ": { name: "Arizona", rate: 0.025 },
+      "AR": { name: "Arkansas", rate: 0.044 },
+      "CA": { name: "California", rate: 0.093 },
+      "CO": { name: "Colorado", rate: 0.044 },
+      "CT": { name: "Connecticut", rate: 0.0699 },
+      "DE": { name: "Delaware", rate: 0.066 },
+      "FL": { name: "Florida", rate: 0 },
+      "GA": { name: "Georgia", rate: 0.0575 },
+      "HI": { name: "Hawaii", rate: 0.11 },
+      "ID": { name: "Idaho", rate: 0.058 },
+      "IL": { name: "Illinois", rate: 0.0495 },
+      "IN": { name: "Indiana", rate: 0.0315 },
+      "IA": { name: "Iowa", rate: 0.053 },
+      "KS": { name: "Kansas", rate: 0.057 },
+      "KY": { name: "Kentucky", rate: 0.04 },
+      "LA": { name: "Louisiana", rate: 0.0425 },
+      "ME": { name: "Maine", rate: 0.0715 },
+      "MD": { name: "Maryland", rate: 0.0575 },
+      "MA": { name: "Massachusetts", rate: 0.05 },
+      "MI": { name: "Michigan", rate: 0.0425 },
+      "MN": { name: "Minnesota", rate: 0.0985 },
+      "MS": { name: "Mississippi", rate: 0.05 },
+      "MO": { name: "Missouri", rate: 0.048 },
+      "MT": { name: "Montana", rate: 0.0675 },
+      "NE": { name: "Nebraska", rate: 0.0684 },
+      "NV": { name: "Nevada", rate: 0 },
+      "NH": { name: "New Hampshire", rate: 0 },
+      "NJ": { name: "New Jersey", rate: 0.1075 },
+      "NM": { name: "New Mexico", rate: 0.059 },
+      "NY": { name: "New York", rate: 0.109 },
+      "NC": { name: "North Carolina", rate: 0.0475 },
+      "ND": { name: "North Dakota", rate: 0.029 },
+      "OH": { name: "Ohio", rate: 0.0385 },
+      "OK": { name: "Oklahoma", rate: 0.0475 },
+      "OR": { name: "Oregon", rate: 0.099 },
+      "PA": { name: "Pennsylvania", rate: 0.0307 },
+      "RI": { name: "Rhode Island", rate: 0.0599 },
+      "SC": { name: "South Carolina", rate: 0.065 },
+      "SD": { name: "South Dakota", rate: 0 },
+      "TN": { name: "Tennessee", rate: 0 },
+      "TX": { name: "Texas", rate: 0 },
+      "UT": { name: "Utah", rate: 0.0465 },
+      "VT": { name: "Vermont", rate: 0.0875 },
+      "VA": { name: "Virginia", rate: 0.0575 },
+      "WA": { name: "Washington", rate: 0 },
+      "WV": { name: "West Virginia", rate: 0.065 },
+      "WI": { name: "Wisconsin", rate: 0.0765 },
+      "WY": { name: "Wyoming", rate: 0 }
+    };
+
     // Defaults
     document.addEventListener("DOMContentLoaded", function () {
       const today = new Date();
       document.getElementById("startDate").value = today.toISOString().split("T")[0];
+      document.getElementById("reverseStartDate").value = today.toISOString().split("T")[0];
 
       // Default birthdate to 55 years ago
       const defaultBirth = new Date(today.getFullYear() - 55, today.getMonth(), today.getDate());
       document.getElementById("birthdate").value = defaultBirth.toISOString().split("T")[0];
+      document.getElementById("reverseBirthdate").value = defaultBirth.toISOString().split("T")[0];
+
+      // Populate state dropdown
+      const stateSelect = document.getElementById("stateSelect");
+      Object.keys(stateTaxRates).forEach(key => {
+        if (key !== 'none') {
+          const option = document.createElement("option");
+          option.value = key;
+          option.textContent = stateTaxRates[key].name;
+          stateSelect.appendChild(option);
+        }
+      });
+
+      // Load from URL if parameters present
+      loadFromUrl();
     });
+
+    // Update maximum allowed rate based on AFR
+    function updateMaxRate() {
+      const afr = parseFloat(document.getElementById('currentAFR').value) || 0;
+      const afrTimes120 = afr * 1.20;
+      const maxRate = Math.max(5.0, afrTimes120);
+      document.getElementById('maxAllowedRate').textContent = maxRate.toFixed(2) + '%';
+
+      // Update interest rate field max attribute and helper text
+      document.getElementById('interestRate').max = maxRate.toFixed(2);
+      document.getElementById('maxRateHelper').textContent = maxRate.toFixed(2);
+    }
+
+    // Use max allowed rate
+    function useMaxRate() {
+      const maxRate = document.getElementById('maxAllowedRate').textContent.replace('%', '');
+      document.getElementById('interestRate').value = maxRate;
+    }
+
+    // Mode switching
+    function switchMode(mode) {
+      if (mode === 'forward') {
+        document.getElementById('forwardCalculator').classList.remove('hidden');
+        document.getElementById('reverseCalculator').classList.add('hidden');
+        document.getElementById('results').classList.add('hidden');
+        document.getElementById('reverseResults').classList.add('hidden');
+        document.getElementById('forwardModeBtn').classList.add('active');
+        document.getElementById('reverseModeBtn').classList.remove('active');
+      } else {
+        document.getElementById('forwardCalculator').classList.add('hidden');
+        document.getElementById('reverseCalculator').classList.remove('hidden');
+        document.getElementById('results').classList.add('hidden');
+        document.getElementById('reverseResults').classList.add('hidden');
+        document.getElementById('forwardModeBtn').classList.remove('active');
+        document.getElementById('reverseModeBtn').classList.add('active');
+      }
+    }
+
+    // Print results
+    function printResults() {
+      window.print();
+    }
+
+    // Copy shareable link with parameters
+    function copyShareableLink() {
+      const params = new URLSearchParams({
+        birthdate: document.getElementById('birthdate').value,
+        startDate: document.getElementById('startDate').value,
+        balance: document.getElementById('balance').value,
+        interestRate: document.getElementById('interestRate').value,
+        growthRate: document.getElementById('growthRate').value,
+        filingStatus: document.getElementById('filingStatus').value,
+        otherIncome: document.getElementById('otherIncome').value,
+        state: document.getElementById('stateSelect').value,
+        table: document.getElementById('lifeExpTable').value
+      });
+
+      const shareableUrl = window.location.origin + window.location.pathname + '?' + params.toString();
+
+      // Copy to clipboard
+      navigator.clipboard.writeText(shareableUrl).then(() => {
+        alert('Shareable link copied to clipboard!\n\nAnyone with this link can view your calculation with the same parameters.');
+      }).catch(() => {
+        // Fallback for older browsers
+        prompt('Copy this link to share your calculation:', shareableUrl);
+      });
+    }
+
+    // Save scenario to localStorage
+    function saveScenario() {
+      const scenarioName = prompt('Enter a name for this scenario:', 'SEPP Calculation ' + new Date().toLocaleDateString());
+      if (!scenarioName) return;
+
+      const scenario = {
+        name: scenarioName,
+        timestamp: new Date().toISOString(),
+        params: {
+          birthdate: document.getElementById('birthdate').value,
+          startDate: document.getElementById('startDate').value,
+          balance: document.getElementById('balance').value,
+          interestRate: document.getElementById('interestRate').value,
+          growthRate: document.getElementById('growthRate').value,
+          filingStatus: document.getElementById('filingStatus').value,
+          otherIncome: document.getElementById('otherIncome').value,
+          state: document.getElementById('stateSelect').value,
+          table: document.getElementById('lifeExpTable').value
+        },
+        results: {
+          rmdAmount: document.getElementById('rmdAmount').textContent,
+          amortAmount: document.getElementById('amortAmount').textContent,
+          annuitAmount: document.getElementById('annuitAmount').textContent
+        }
+      };
+
+      // Get existing scenarios
+      const scenarios = JSON.parse(localStorage.getItem('seppScenarios') || '[]');
+      scenarios.push(scenario);
+      localStorage.setItem('seppScenarios', JSON.stringify(scenarios));
+
+      alert('Scenario saved! You can load it later from the browser on this device.');
+    }
+
+    // Load parameters from URL on page load
+    function loadFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('birthdate')) {
+        document.getElementById('birthdate').value = params.get('birthdate');
+        document.getElementById('startDate').value = params.get('startDate');
+        document.getElementById('balance').value = params.get('balance');
+        document.getElementById('interestRate').value = params.get('interestRate') || '5.00';
+        document.getElementById('growthRate').value = params.get('growthRate') || '3.5';
+        document.getElementById('filingStatus').value = params.get('filingStatus') || 'married';
+        document.getElementById('otherIncome').value = params.get('otherIncome') || '0';
+        document.getElementById('stateSelect').value = params.get('state') || 'none';
+        document.getElementById('lifeExpTable').value = params.get('table') || 'single';
+
+        // Auto-calculate if URL has parameters
+        setTimeout(() => calculate(), 100);
+      }
+    }
 
     function calculateAge(birthdate, targetDate) {
       if (!birthdate || !targetDate) return 0;
@@ -609,6 +1151,94 @@
       }).format(amount);
     }
 
+    // Calculate federal income tax using progressive brackets
+    function calculateFederalTax(taxableIncome, filingStatus) {
+      const brackets = filingStatus === 'married' ? federalTaxBracketsMarried : federalTaxBracketsSingle;
+      let tax = 0;
+      let previousMax = 0;
+
+      for (const bracket of brackets) {
+        if (taxableIncome <= bracket.min) break;
+
+        const taxableInBracket = Math.min(taxableIncome, bracket.max) - bracket.min;
+        tax += taxableInBracket * bracket.rate;
+
+        if (taxableIncome <= bracket.max) break;
+      }
+
+      return tax;
+    }
+
+    // Calculate total tax burden and after-tax income
+    function calculateTaxes(seppIncome, otherIncome, filingStatus, stateCode) {
+      const totalIncome = seppIncome + otherIncome;
+
+      // Calculate federal tax
+      const federalTax = calculateFederalTax(totalIncome, filingStatus);
+
+      // Calculate state tax (simplified as flat rate)
+      const stateTaxRate = stateTaxRates[stateCode]?.rate || 0;
+      const stateTax = totalIncome * stateTaxRate;
+
+      // Total tax and after-tax income
+      const totalTax = federalTax + stateTax;
+      const afterTaxIncome = seppIncome - (totalTax * (seppIncome / totalIncome)); // Proportional tax
+
+      return {
+        federalTax,
+        stateTax,
+        totalTax,
+        afterTaxIncome,
+        effectiveTaxRate: (totalTax / totalIncome) * 100
+      };
+    }
+
+    // Reverse calculations: Given desired payment, calculate required balance
+
+    // Reverse RMD: balance = payment * divisor
+    function reverseCalculateRMD(annualPayment, divisor) {
+      if (!divisor || divisor <= 0) return 0;
+      return annualPayment * divisor;
+    }
+
+    // Reverse Amortization: balance = payment * PV factor
+    function reverseCalculateAmortization(annualPayment, n, annualRatePct) {
+      const r = annualRatePct / 100;
+      if (n <= 0) return 0;
+      if (r === 0) return annualPayment * n;
+      const pvFactor = (1 - Math.pow(1 + r, -n)) / r;
+      return annualPayment * pvFactor;
+    }
+
+    // Reverse Annuitization: balance = payment * annuity factor
+    function reverseCalculateAnnuitization(annualPayment, age, annualRatePct) {
+      const r = annualRatePct / 100;
+      const startAge = Math.max(0, Math.min(120, Math.floor(age)));
+
+      if (annualPayment <= 0) return 0;
+
+      let survival = 1.0;
+      let annuityFactor = 0.0;
+
+      // Calculate annuity factor (same as forward calculation)
+      for (let t = 1; t <= 200; t++) {
+        const currentAge = startAge + (t - 1);
+        if (currentAge > 120) break;
+
+        const qx = mortalityQx[currentAge];
+        if (typeof qx !== "number") break;
+
+        survival *= (1 - qx);
+        const pv = r > 0 ? Math.pow(1 + r, -t) : 1.0;
+        annuityFactor += survival * pv;
+
+        if (survival < 1e-10) break;
+      }
+
+      if (!(annuityFactor > 0) || !isFinite(annuityFactor)) return 0;
+      return annualPayment * annuityFactor;
+    }
+
     // Project account balance for RMD method
     function projectRMD(initialBalance, startAge, years, growthRate, tableType) {
       let balance = initialBalance;
@@ -685,6 +1315,15 @@
         amortData[amortData.length - 1].year,
         annuitData[annuitData.length - 1].year
       );
+
+      // Check if any account depletes to determine if we should start Y-axis at zero
+      const allBalances = [
+        ...rmdData.map(d => d.balance),
+        ...amortData.map(d => d.balance),
+        ...annuitData.map(d => d.balance)
+      ];
+      const minBalance = Math.min(...allBalances);
+      const shouldBeginAtZero = minBalance === 0;
 
       balanceChartInstance = new Chart(ctx, {
         type: 'line',
@@ -781,7 +1420,7 @@
                   weight: '600'
                 }
               },
-              beginAtZero: true,
+              beginAtZero: shouldBeginAtZero,
               ticks: {
                 callback: function(value) {
                   return '$' + value.toLocaleString('en-US', {maximumFractionDigits: 0});
@@ -802,6 +1441,9 @@
       const balance = parseFloat(document.getElementById("balance").value);
       const interestRate = parseFloat(document.getElementById("interestRate").value);
       const growthRate = parseFloat(document.getElementById("growthRate").value);
+      const filingStatus = document.getElementById("filingStatus").value;
+      const otherIncome = parseFloat(document.getElementById("otherIncome").value) || 0;
+      const stateCode = document.getElementById("stateSelect").value;
       let tableType = document.getElementById("lifeExpTable").value;
 
       const noteEl = document.getElementById("tableNote");
@@ -816,6 +1458,15 @@
       if (isNaN(interestRate) || interestRate < 0 || interestRate > 10) {
         alert("Please enter a valid interest rate between 0% and 10%.");
         return;
+      }
+
+      // Check if interest rate exceeds IRS maximum
+      const afr = parseFloat(document.getElementById('currentAFR').value) || 0;
+      const maxAllowed = Math.max(5.0, afr * 1.20);
+      if (interestRate > maxAllowed) {
+        if (!confirm(`Warning: Your interest rate (${interestRate.toFixed(2)}%) exceeds the IRS maximum allowed rate of ${maxAllowed.toFixed(2)}%.\n\nThis may not be compliant with IRS Notice 2022-6.\n\nContinue anyway?`)) {
+          return;
+        }
       }
 
       if (isNaN(growthRate) || growthRate < -10 || growthRate > 15) {
@@ -889,6 +1540,42 @@
       const reason = age59_5 > fiveYearsLater ? "age 59½" : "5 years from start";
       document.getElementById("seppEndDate").textContent = "Ends at " + reason + ", whichever is later";
 
+      // Set calculation timestamp
+      const now = new Date();
+      const timestampStr = now.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      document.getElementById("calculationTimestamp").textContent = timestampStr;
+
+      // Calculate and display tax impact
+      const rmdTaxes = calculateTaxes(rmdAmount, otherIncome, filingStatus, stateCode);
+      const amortTaxes = calculateTaxes(amortAmount, otherIncome, filingStatus, stateCode);
+      const annuitTaxes = calculateTaxes(annuitAmount, otherIncome, filingStatus, stateCode);
+
+      document.getElementById("taxFilingStatusDisplay").textContent = filingStatus === 'married' ? 'Married Filing Jointly' : 'Single';
+      document.getElementById("taxStateDisplay").textContent = stateTaxRates[stateCode].name;
+
+      document.getElementById("rmdAfterTax").textContent = formatCurrency(rmdTaxes.afterTaxIncome);
+      document.getElementById("rmdAfterTaxMonthly").textContent = formatCurrency(rmdTaxes.afterTaxIncome / 12) + "/month";
+
+      document.getElementById("amortAfterTax").textContent = formatCurrency(amortTaxes.afterTaxIncome);
+      document.getElementById("amortAfterTaxMonthly").textContent = formatCurrency(amortTaxes.afterTaxIncome / 12) + "/month";
+
+      document.getElementById("annuitAfterTax").textContent = formatCurrency(annuitTaxes.afterTaxIncome);
+      document.getElementById("annuitAfterTaxMonthly").textContent = formatCurrency(annuitTaxes.afterTaxIncome / 12) + "/month";
+
+      // Use average effective tax rate for display
+      const avgEffectiveTaxRate = (rmdTaxes.effectiveTaxRate + amortTaxes.effectiveTaxRate + annuitTaxes.effectiveTaxRate) / 3;
+      document.getElementById("effectiveTaxRate").textContent = avgEffectiveTaxRate.toFixed(2) + "%";
+
+      // Show tax section
+      document.getElementById("taxImpactSection").style.display = "block";
+
       // Display calculation breakdown
       const r = interestRate / 100;
       const pvFactor = r === 0 ? divisor : (1 - Math.pow(1 + r, -divisor)) / r;
@@ -948,6 +1635,111 @@
 
       document.getElementById("results").classList.remove("hidden");
       document.getElementById("results").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function calculateReverse() {
+      const birthdate = document.getElementById("reverseBirthdate").value;
+      const startDate = document.getElementById("reverseStartDate").value;
+      const targetIncome = parseFloat(document.getElementById("targetIncome").value);
+      const interestRate = parseFloat(document.getElementById("reverseInterestRate").value);
+      let tableType = document.getElementById("reverseLifeExpTable").value;
+
+      const noteEl = document.getElementById("reverseTableNote");
+      noteEl.classList.add("hidden");
+      noteEl.textContent = "";
+
+      // Validation
+      if (!birthdate || !startDate || isNaN(targetIncome) || targetIncome <= 0) {
+        alert("Please fill in all required fields with valid values.");
+        return;
+      }
+
+      if (isNaN(interestRate) || interestRate < 0 || interestRate > 10) {
+        alert("Please enter a valid interest rate between 0% and 10%.");
+        return;
+      }
+
+      const age = calculateAge(birthdate, startDate);
+
+      if (age >= 60) {
+        if (!confirm("You are " + age + " years old. 72(t) SEPP is typically for those under 59½. Continue anyway?")) {
+          return;
+        }
+      }
+
+      if (age < 30) {
+        if (!confirm("You are " + age + " years old. 72(t) SEPP is typically used closer to retirement age. Continue anyway?")) {
+          return;
+        }
+      }
+
+      // Get divisor / life expectancy
+      let divisor = getDivisorOrLifeExpectancy(age, tableType);
+
+      // If uniform selected but age < 72, fall back to single and warn
+      if (tableType === "uniform" && (divisor === null || divisor === undefined)) {
+        tableType = "single";
+        divisor = getDivisorOrLifeExpectancy(age, tableType);
+        noteEl.textContent = "Note: The Uniform Lifetime Table divisor is only defined starting at age 72 in the CFR table. For ages under 72, this calculator falls back to the Single Life Table.";
+        noteEl.classList.remove("hidden");
+      }
+
+      // Reverse Calculations
+      const rmdBalance = reverseCalculateRMD(targetIncome, divisor);
+      const amortBalance = reverseCalculateAmortization(targetIncome, divisor, interestRate);
+      const annuitBalance = reverseCalculateAnnuitization(targetIncome, age, interestRate);
+
+      // Display results
+      document.getElementById("reverseTargetDisplay").textContent = formatCurrency(targetIncome);
+
+      document.getElementById("reverseRmdBalance").textContent = formatCurrency(rmdBalance);
+      document.getElementById("reverseAmortBalance").textContent = formatCurrency(amortBalance);
+      document.getElementById("reverseAnnuitBalance").textContent = formatCurrency(annuitBalance);
+
+      document.getElementById("reverseCalcAge").textContent = age + " years";
+      document.getElementById("reverseCalcLifeExp").textContent = (typeof divisor === "number" ? divisor.toFixed(1) : "-");
+      document.getElementById("reverseCalcRate").textContent = interestRate.toFixed(2) + "%";
+      document.getElementById("reverseCalcIncome").textContent = formatCurrency(targetIncome);
+
+      // Display calculation breakdown
+      const r = interestRate / 100;
+      const pvFactor = r === 0 ? divisor : (1 - Math.pow(1 + r, -divisor)) / r;
+
+      // Calculate annuity factor for display
+      let survival = 1.0;
+      let annuityFactor = 0.0;
+      const startAge = Math.max(0, Math.min(120, Math.floor(age)));
+      for (let t = 1; t <= 200; t++) {
+        const currentAge = startAge + (t - 1);
+        if (currentAge > 120) break;
+        const qx = mortalityQx[currentAge];
+        if (typeof qx !== "number") break;
+        survival *= (1 - qx);
+        const pv = r > 0 ? Math.pow(1 + r, -t) : 1.0;
+        annuityFactor += survival * pv;
+        if (survival < 1e-10) break;
+      }
+
+      const reverseBreakdownHTML = `
+        <div style="margin-bottom: 1rem;">
+          <strong>RMD Method:</strong><br>
+          Required Balance = ${formatCurrency(targetIncome)} × ${divisor.toFixed(1)} = ${formatCurrency(rmdBalance)}
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <strong>Fixed Amortization Method:</strong><br>
+          PV Factor = (1 - (1 + ${r.toFixed(4)})<sup>-${divisor.toFixed(1)}</sup>) / ${r.toFixed(4)} = ${pvFactor.toFixed(4)}<br>
+          Required Balance = ${formatCurrency(targetIncome)} × ${pvFactor.toFixed(4)} = ${formatCurrency(amortBalance)}
+        </div>
+        <div>
+          <strong>Fixed Annuitization Method:</strong><br>
+          Annuity Factor (from CFR Table 4 mortality rates) = ${annuityFactor.toFixed(4)}<br>
+          Required Balance = ${formatCurrency(targetIncome)} × ${annuityFactor.toFixed(4)} = ${formatCurrency(annuitBalance)}
+        </div>
+      `;
+      document.getElementById("reverseCalcBreakdown").innerHTML = reverseBreakdownHTML;
+
+      document.getElementById("reverseResults").classList.remove("hidden");
+      document.getElementById("reverseResults").scrollIntoView({ behavior: "smooth" });
     }
   </script>
 </body>
